@@ -558,7 +558,7 @@ void main(void)
 		for (int i = 0; i < 20; i++) {
 			float f = (float(i) + bias) / 20.;
 			vec3 ray_position = ray_origin + viewVec * f * f * ray_length;
-			ray_intensity += getGodRay(ray_position) * 0.002 * float(2 * i + 1);
+			ray_intensity += getGodRay(ray_position) * 0.00002 * float(2 * i + 1) * ray_length;
 		}
 		ray_intensity *= pow(max(-dot(v_LightDirection, viewVec), 0.), 4.);
 
