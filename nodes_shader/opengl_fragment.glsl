@@ -533,7 +533,7 @@ void main(void)
 		col.rgb *= 1. - liquid * 0.5;
 		col.rgb += liquid * skyBgColor.rgb * pow((1. - adjusted_night_ratio) * dp, 2.) * 0.5;
 		vec3 reflect_ray = -normalize(v_LightDirection - fNormal * dot(v_LightDirection, fNormal) * 2.);
-		col.rgb += liquid * dayLight * 32. * dp * mtsmoothstep(0.85, 0.9, pow(clamp(dot(reflect_ray, viewVec), 0., 1.), 32.)) * max(1. - shadow_uncorrected, 0.) * f_adj_shadow_strength;
+		col.rgb += liquid * dayLight * 16. * dp * mtsmoothstep(0.85, 0.9, pow(clamp(dot(reflect_ray, viewVec), 0., 1.), 32.)) * max(1. - shadow_uncorrected, 0.) * f_adj_shadow_strength;
 
 		col.rgb += base.rgb * normalize(base.rgb) * dayLight * f_adj_shadow_strength * 8. * step(0.5, leaves) * pow(max(-dot(v_LightDirection, viewVec), 0.), 16.) * max(1. - shadow_uncorrected, 0.);
 
@@ -558,7 +558,7 @@ void main(void)
 		for (int i = 0; i < 20; i++) {
 			float f = (float(i) + bias) / 20.;
 			vec3 ray_position = ray_origin + viewVec * f * f * ray_length;
-			ray_intensity += getGodRay(ray_position) * 0.00002 * float(2 * i + 1) * ray_length;
+			ray_intensity += getGodRay(ray_position) * 0.002 * float(2 * i + 1);
 		}
 		ray_intensity *= pow(max(-dot(v_LightDirection, viewVec), 0.), 4.);
 
