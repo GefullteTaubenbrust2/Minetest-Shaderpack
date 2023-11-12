@@ -1,3 +1,6 @@
+#define ENABLE_GOD_RAYS
+#define ENABLE_FRAGMENT_WAVES
+
 uniform sampler2D baseTexture;
 
 uniform mat4 mWorld;
@@ -519,6 +522,7 @@ void main(void)
 						col.rgb * (1.0 - shadow_int * (1.0 - shadow_color) * vec3(1., 0.85, 0.6)) +  // filtered texture color
 						dayLight * shadow_color * shadow_int);                 // reflected filtered sunlight/moonlight
 
+#ifdef ENABLE_FRAGMENT_WAVES
 		vec3 wavePos = worldPosition * vec3(2., 0., 2.);
 		wavePos.x /= WATER_WAVE_LENGTH * 3.0;
 		wavePos.z /= WATER_WAVE_LENGTH * 4.0;
@@ -527,6 +531,9 @@ void main(void)
 		float dydx = (fnoise(wavePos + vec3(0.1, 0., 0.)) - fxy) / 0.1;
 		float dydz = (fnoise(wavePos + vec3(0., 0., 0.1)) - fxy) / 0.1;
 		vec3 fNormal = normalize(normalize(dNormal) + vec3(-dydx, 0., -dydz) * WATER_WAVE_HEIGHT * 0.25 * abs(dNormal.y));
+#else
+		vec3 fNormal = normalize(dNormal);
+#endif
 
 		float dp = dot(fNormal, viewVec);
 		dp =  clamp(pow(1. - dp * dp, 8.), 0., 1.);
@@ -537,11 +544,12 @@ void main(void)
 
 		col.rgb += base.rgb * normalize(base.rgb) * dayLight * f_adj_shadow_strength * 8. * step(0.5, leaves) * pow(max(-dot(v_LightDirection, viewVec), 0.), 16.) * max(1. - shadow_uncorrected, 0.);
 
+#ifdef ENABLE_GOD_RAYS
+		float bias = step(mod(gl_FragCoord.y * 0.5, 2), 0.8) * 0.125 + step(mod((gl_FragCoord.y + gl_FragCoord.x) * 0.5, 2), 0.8) * 0.0625 + step(mod(gl_FragCoord.y, 2), 0.8) * 0.5 + step(mod(gl_FragCoord.y + gl_FragCoord.x, 2), 0.8) * 0.25;
 #ifdef COLORED_SHADOWS
 		vec3 ray_intensity = vec3(0.);
 		float ray_length = length(eyeVec);
 		vec3 ray_origin = eyePosition - (vec4(cameraOffset, 1.) * mWorld).xyz;
-		float bias = step(mod(gl_FragCoord.y, 2), 0.8) * 0.5 + step(mod(gl_FragCoord.y + gl_FragCoord.x, 2), 0.8) * 0.25;
 		for (int i = 0; i < 20; i++) {
 			float f = (float(i) + bias) / 20.;
 			vec3 ray_position = ray_origin + viewVec * f * f * ray_length;
@@ -554,7 +562,6 @@ void main(void)
 		float ray_intensity = 0.;
 		float ray_length = length(eyeVec);
 		vec3 ray_origin = eyePosition - (vec4(cameraOffset, 1.) * mWorld).xyz;
-		float bias = step(mod(gl_FragCoord.y, 2), 0.8) * 0.5 + step(mod(gl_FragCoord.y + gl_FragCoord.x, 2), 0.8) * 0.25;
 		for (int i = 0; i < 20; i++) {
 			float f = (float(i) + bias) / 20.;
 			vec3 ray_position = ray_origin + viewVec * f * f * ray_length;
@@ -563,6 +570,7 @@ void main(void)
 		ray_intensity *= pow(max(-dot(v_LightDirection, viewVec), 0.), 4.);
 
 		col.rgb += dayLight * ray_intensity * vec3(1., 0.7, 0.4) * f_adj_shadow_strength;
+#endif
 #endif
 	}
 #endif
