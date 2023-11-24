@@ -1,6 +1,7 @@
 # GefTau Shaderpack for Minetest
 This pack is intended to improve Minetest's visuals by modifying its shader code. The pack adds the following effects:
 - Better Shadow/artificial Light Colors
+- Vignette
 - Color Grading
 - Translucent Foliage
 - Glossy water

@@ -538,7 +538,8 @@ void main(void)
 		float dp = dot(fNormal, viewVec);
 		dp =  clamp(pow(1. - dp * dp, 8.), 0., 1.);
 		col.rgb *= 1. - liquid * 0.5;
-		col.rgb += liquid * skyBgColor.rgb * pow((1. - adjusted_night_ratio) * dp, 2.) * 0.5;
+		vec3 reflection_color = mix(vec3(max(skyBgColor.r, max(skyBgColor.g, skyBgColor.b))), skyBgColor.rgb, f_adj_shadow_strength);
+		col.rgb += liquid * reflection_color * pow((1. - adjusted_night_ratio) * dp, 2.) * 0.5;
 		vec3 reflect_ray = -normalize(v_LightDirection - fNormal * dot(v_LightDirection, fNormal) * 2.);
 		col.rgb += liquid * dayLight * 16. * dp * mtsmoothstep(0.85, 0.9, pow(clamp(dot(reflect_ray, viewVec), 0., 1.), 32.)) * max(1. - shadow_uncorrected, 0.) * f_adj_shadow_strength;
 

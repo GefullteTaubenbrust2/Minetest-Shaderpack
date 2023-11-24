@@ -112,7 +112,12 @@ void main(void)
 
 	color.rgb = clamp(color.rgb, vec3(0.), vec3(1.));
 
+	color.rgb *= pow(1. - length(uv - vec2(0.5)) * 1.4, 0.9) + 0.2;
+
 	color.rgb = pow(color.rgb, vec3(1.15, 1., 0.85)) * vec3(1.15, 1., 0.85);
+
+	float bias = step(mod(gl_FragCoord.y * 0.5, 2), 0.8) * 0.125 + step(mod((gl_FragCoord.y + gl_FragCoord.x) * 0.5, 2), 0.8) * 0.0625 + step(mod(gl_FragCoord.y, 2), 0.8) * 0.5 + step(mod(gl_FragCoord.y + gl_FragCoord.x, 2), 0.8) * 0.25;
+	color.rgb += (bias - 0.5) / 128.;
 
 	// return to sRGB colorspace (approximate)
 	color.rgb = pow(color.rgb, vec3(1.0 / 2.2));
