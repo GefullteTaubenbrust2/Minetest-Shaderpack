@@ -116,11 +116,11 @@ void main(void)
 
 	color.rgb = pow(color.rgb, vec3(1.15, 1., 0.85)) * vec3(1.15, 1., 0.85);
 
-	float bias = step(mod(gl_FragCoord.y * 0.5, 2), 0.8) * 0.125 + step(mod((gl_FragCoord.y + gl_FragCoord.x) * 0.5, 2), 0.8) * 0.0625 + step(mod(gl_FragCoord.y, 2), 0.8) * 0.5 + step(mod(gl_FragCoord.y + gl_FragCoord.x, 2), 0.8) * 0.25;
-	color.rgb += (bias - 0.5) / 128.;
-
 	// return to sRGB colorspace (approximate)
 	color.rgb = pow(color.rgb, vec3(1.0 / 2.2));
 
-	gl_FragColor = vec4(color.rgb, 1.0); // force full alpha to avoid holes in the image.
+	float bias = step(mod(gl_FragCoord.y * 0.5, 2), 0.8) * 0.125 + step(mod((gl_FragCoord.y + gl_FragCoord.x) * 0.5, 2), 0.8) * 0.0625 + step(mod(gl_FragCoord.y, 2), 0.8) * 0.5 + step(mod(gl_FragCoord.y + gl_FragCoord.x, 2), 0.8) * 0.25;
+	color.rgb += (bias - 0.5) / 256.;
+
+	gl_FragColor = vec4(clamp(color.rgb, vec3(0.), vec3(1.)), 1.0); // force full alpha to avoid holes in the image.
 }
