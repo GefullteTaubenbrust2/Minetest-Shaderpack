@@ -191,7 +191,7 @@ leaves = 0.01;
 	wavePos.z += animationTimer * WATER_WAVE_SPEED * 10.0;
 	float dydx = (snoise(wavePos + vec3(0.1, 0., 0.)) - snoise(wavePos)) / 0.1;
 	float dydz = (snoise(wavePos + vec3(0., 0., 0.1)) - snoise(wavePos)) / 0.1;
-	dNormal = normalize(normalize(inVertexNormal + vec3(0., 0.001, 0.)) + vec3(-dydx, 0., -dydz) * WATER_WAVE_HEIGHT * 0.5 * abs(inVertexNormal.y));
+	dNormal = normalize(normalize(vec3(0., 1., 0.) + vec3(0., 0.001, 0.)) + vec3(-dydx, 0., -dydz) * WATER_WAVE_HEIGHT * 0.5 * abs(inVertexNormal.y));
 	pos.y += (snoise(wavePos) - 1.0) * WATER_WAVE_HEIGHT * 5.0;
 #elif MATERIAL_TYPE == TILE_MATERIAL_WAVING_LEAVES && ENABLE_WAVING_LEAVES
 	pos.x += disp_x;
