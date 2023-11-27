@@ -27,6 +27,7 @@ Of course there is at least some performance impact that comes with these effect
 # Gallery
 ![screenshot_20231030_175105](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/9b42db6d-398e-44fb-8b2e-a698f6147ba2)
 ![screenshot_20231031_104621](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/455152bb-9ac3-42e4-9088-78e01264d59d)
-![screenshot_20231031_104547](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/b088067f-476e-43dd-a459-bf952eb81574)
-![screenshot_20231031_104433](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/84defa40-133e-4981-a76e-810dd8f8f4b8)
+![screenshot_20231126_141917](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/4ba24b62-ebdf-47c3-b864-70c350ac18eb)
+![screenshot_20231127_183152](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/c5ebfc0b-d9c0-41c8-993b-d87b2e744951)
 ![screenshot_20231030_130006](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/b8c8663c-5d76-4287-bce2-83e89e94567e)
+![screenshot_20231127_181538](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/5fb2b398-a755-499e-bb10-339221dee82e)
