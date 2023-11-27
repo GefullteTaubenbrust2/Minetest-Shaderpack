@@ -1,5 +1,5 @@
 # GefTau Shaderpack for Minetest
-This pack is intended to improve Minetest's visuals by modifying its shader code. The pack adds the following effects:
+This pack is intended to improve Minetest's visuals by modifying its shader code. Of course, the code is based off of minetest's original shader code. The pack adds the following effects:
 - Better Shadow/artificial Light Colors
 - Vignette
 - Color Grading
