@@ -3,6 +3,7 @@ uniform sampler2D baseTexture;
 uniform vec3 dayLight;
 uniform vec4 skyBgColor;
 uniform float fogDistance;
+uniform float fogShadingParameter;
 uniform vec3 eyePosition;
 
 // The cameraOffset is the current center of the visible world.
@@ -47,9 +48,6 @@ varying vec3 eyeVec;
 varying float nightRatio;
 
 varying float vIDiff;
-
-const float fogStart = FOG_START;
-const float fogShadingParameter = 1.0 / (1.0 - fogStart);
 
 #ifdef ENABLE_DYNAMIC_SHADOWS
 
@@ -429,12 +427,18 @@ void main(void)
 			shadow_color = mix(vec3(0.0), shadow_color, min(cosLight, self_shadow_cutoff_cosine)/self_shadow_cutoff_cosine);
 		}
 
+		float shadow_uncorrected = shadow_int;
 		shadow_int *= f_adj_shadow_strength;
+
+		float tint_factor = min(abs(v_LightDirection.y) * 3., 1.);
+		float tint_strength = clamp((dayLight.r - 0.1) * 5., 0., 1.) * (1. - min(shadow_uncorrected, 1.) * 0.125) * min(f_adj_shadow_strength * 2., 1.);
+		vec3 sun_tint = vec3(1., pow(tint_factor, 0.5), pow(tint_factor, 2.)) * (tint_strength * 0.75) + vec3(tint_factor * 0.5 + 0.5) * (1. - tint_strength * 0.75);
+		vec3 tinted_dayLight = dayLight * sun_tint;
 
 		// calculate fragment color from components:
 		col.rgb =
 				adjusted_night_ratio * col.rgb + // artificial light
-				(1.0 - adjusted_night_ratio) * ( // natural light
+				(1.0 - adjusted_night_ratio) * sun_tint * ( // natural light
 						col.rgb * (1.0 - shadow_int * (1.0 - shadow_color) * vec3(1., 0.85, 0.6)) +  // filtered texture color
 						dayLight * shadow_color * shadow_int);                 // reflected filtered sunlight/moonlight
 	}

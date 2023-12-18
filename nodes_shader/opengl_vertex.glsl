@@ -44,8 +44,8 @@ centroid varying vec2 varTexCoord;
 #endif
 
 varying vec3 viewVec;
-varying float liquid;
 varying float leaves;
+varying vec3 leavesPos;
 
 varying float area_enable_parallax;
 
@@ -159,11 +159,6 @@ void main(void)
 	float disp_x;
 	float disp_z;
 // OpenGL < 4.3 does not support continued preprocessor lines
-#if (MATERIAL_TYPE == TILE_MATERIAL_WAVING_LIQUID_TRANSPARENT)
-	liquid = 1.;
-#else
-	liquid = 0.;
-#endif
 
 leaves = 0.01;
 #if (MATERIAL_TYPE == TILE_MATERIAL_WAVING_LEAVES && ENABLE_WAVING_LEAVES) || (MATERIAL_TYPE == TILE_MATERIAL_WAVING_PLANTS && ENABLE_WAVING_PLANTS)
@@ -178,6 +173,7 @@ leaves = 0.01;
 #endif
 
 	vec4 pos = inVertexPosition;
+	leavesPos = (mWorld * pos).xyz * 0.1 + 0.5;
 // OpenGL < 4.3 does not support continued preprocessor lines
 #if (MATERIAL_TYPE == TILE_MATERIAL_WAVING_LIQUID_TRANSPARENT || MATERIAL_TYPE == TILE_MATERIAL_WAVING_LIQUID_OPAQUE || MATERIAL_TYPE == TILE_MATERIAL_WAVING_LIQUID_BASIC) && ENABLE_WAVING_WATER
 	// Generate waves with Perlin-type noise.
@@ -270,7 +266,6 @@ leaves = 0.01;
 			normalOffsetScale = 0.0;
 			z_bias = 3.6e3 * sinLight / cosLight;
 		}
-		//cosLight = min(cosLight + step(0.5, leaves), 1.);
 		z_bias *= pFactor * pFactor / f_textureresolution / f_shadowfar;
 
 		shadow_position = applyPerspectiveDistortion(m_ShadowViewProj * mWorld * (shadow_pos + vec4(normalOffsetScale * nNormal, 0.0))).xyz;

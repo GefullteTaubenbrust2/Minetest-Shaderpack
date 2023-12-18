@@ -8,6 +8,7 @@ uniform mat4 mWorld;
 uniform vec3 dayLight;
 uniform vec4 skyBgColor;
 uniform float fogDistance;
+uniform float fogShadingParameter;
 uniform vec3 eyePosition;
 
 // The cameraOffset is the current center of the visible world.
@@ -57,11 +58,8 @@ varying vec3 lightVec;
 varying vec3 tsLightVec;
 
 varying vec3 viewVec;
-varying float liquid;
 varying float leaves;
-
-const float fogStart = FOG_START;
-const float fogShadingParameter = 1.0 / ( 1.0 - fogStart);
+varying vec3 leavesPos;
 
 #ifdef ENABLE_DYNAMIC_SHADOWS
 
@@ -445,7 +443,6 @@ float getGodRay(vec3 position) {
 }
 #endif
 
-
 void main(void)
 {
 	vec3 color;
@@ -504,24 +501,46 @@ void main(void)
 		// Power ratio was measured on torches in MTG (brightness = 14).
 		float adjusted_night_ratio = pow(max(0.0, nightRatio), 0.6);
 
+#if (MATERIAL_TYPE == TILE_MATERIAL_WAVING_LEAVES && ENABLE_WAVING_LEAVES)
+		vec3 leafPos = mod(leavesPos, vec3(1.)) * 2. - 1.;
+		vec3 smooth_normal = normalize(vNormal + leafPos - vNormal * dot(leafPos, vNormal));
+		float light_factor = max(dot(smooth_normal, v_LightDirection) * 0.8 + 0.2, 0.);
+
+		//col.rgb = vec3(light_factor);
+
 		// Apply self-shadowing when light falls at a narrow angle to the surface
 		// Cosine of the cut-off angle.
 		const float self_shadow_cutoff_cosine = 0.035;
-		if (f_normal_length != 0 && cosLight < self_shadow_cutoff_cosine && leaves < 0.1) {
+		if (f_normal_length != 0 && cosLight < self_shadow_cutoff_cosine) {
+			shadow_int = max(shadow_int, 1 - clamp(cosLight, 0.0, self_shadow_cutoff_cosine)/self_shadow_cutoff_cosine) * light_factor + shadow_int * (1. - light_factor);
+			shadow_color = mix(vec3(0.0), shadow_color, min(cosLight, self_shadow_cutoff_cosine)/self_shadow_cutoff_cosine) * light_factor + shadow_color * (1. - light_factor);
+		}
+#else
+		// Apply self-shadowing when light falls at a narrow angle to the surface
+		// Cosine of the cut-off angle.
+		const float self_shadow_cutoff_cosine = 0.035;
+		if (f_normal_length != 0 && cosLight < self_shadow_cutoff_cosine) {
 			shadow_int = max(shadow_int, 1 - clamp(cosLight, 0.0, self_shadow_cutoff_cosine)/self_shadow_cutoff_cosine);
 			shadow_color = mix(vec3(0.0), shadow_color, min(cosLight, self_shadow_cutoff_cosine)/self_shadow_cutoff_cosine);
 		}
+#endif
 
 		float shadow_uncorrected = shadow_int;
 		shadow_int *= f_adj_shadow_strength;
 
+		float tint_factor = min(abs(v_LightDirection.y) * 3., 1.);
+		float tint_strength = clamp((dayLight.r - 0.1) * 5., 0., 1.) * (1. - min(shadow_uncorrected, 1.) * 0.125) * min(f_adj_shadow_strength * 2., 1.);
+		vec3 sun_tint = vec3(1., pow(tint_factor, 0.5), pow(tint_factor, 2.)) * (tint_strength * 0.75) + vec3(tint_factor * 0.5 + 0.5) * (1. - tint_strength * 0.75);
+		vec3 tinted_dayLight = dayLight * sun_tint;
+
 		// calculate fragment color from components:
 		col.rgb =
 				adjusted_night_ratio * col.rgb + // artificial light
-				(1.0 - adjusted_night_ratio) * ( // natural light
+				(1.0 - adjusted_night_ratio) * sun_tint * ( // natural light
 						col.rgb * (1.0 - shadow_int * (1.0 - shadow_color) * vec3(1., 0.85, 0.6)) +  // filtered texture color
 						dayLight * shadow_color * shadow_int);                 // reflected filtered sunlight/moonlight
 
+#if (MATERIAL_TYPE == TILE_MATERIAL_WAVING_LIQUID_TRANSPARENT)
 #ifdef ENABLE_FRAGMENT_WAVES
 		vec3 wavePos = worldPosition * vec3(2., 0., 2.);
 		wavePos.x /= WATER_WAVE_LENGTH * 3.0;
@@ -534,16 +553,16 @@ void main(void)
 #else
 		vec3 fNormal = normalize(dNormal);
 #endif
-
 		float dp = dot(fNormal, viewVec);
 		dp =  clamp(pow(1. - dp * dp, 8.), 0., 1.);
-		col.rgb *= 1. - liquid * 0.5;
+		col.rgb *= 0.5;
 		vec3 reflection_color = mix(vec3(max(skyBgColor.r, max(skyBgColor.g, skyBgColor.b))), skyBgColor.rgb, f_adj_shadow_strength);
-		col.rgb += liquid * reflection_color * pow((1. - adjusted_night_ratio) * dp, 2.) * 0.5;
+		col.rgb += reflection_color * pow((1. - adjusted_night_ratio) * dp, 2.) * 0.5;
 		vec3 reflect_ray = -normalize(v_LightDirection - fNormal * dot(v_LightDirection, fNormal) * 2.);
-		col.rgb += liquid * dayLight * 16. * dp * mtsmoothstep(0.85, 0.9, pow(clamp(dot(reflect_ray, viewVec), 0., 1.), 32.)) * max(1. - shadow_uncorrected, 0.) * f_adj_shadow_strength;
+		col.rgb += tinted_dayLight * 16. * dp * mtsmoothstep(0.85, 0.9, pow(clamp(dot(reflect_ray, viewVec), 0., 1.), 32.)) * max(1. - shadow_uncorrected, 0.) * f_adj_shadow_strength;
+#endif
 
-		col.rgb += base.rgb * normalize(base.rgb) * dayLight * f_adj_shadow_strength * 8. * step(0.5, leaves) * pow(max(-dot(v_LightDirection, viewVec), 0.), 16.) * max(1. - shadow_uncorrected, 0.);
+		col.rgb += base.rgb * normalize(base.rgb) * tinted_dayLight * f_adj_shadow_strength * 8. * step(0.5, leaves) * pow(max(-dot(v_LightDirection, viewVec), 0.), 16.) * max(1. - shadow_uncorrected, 0.);
 
 #ifdef ENABLE_GOD_RAYS
 		float bias = step(mod(gl_FragCoord.y * 0.5, 2), 0.8) * 0.125 + step(mod((gl_FragCoord.y + gl_FragCoord.x) * 0.5, 2), 0.8) * 0.0625 + step(mod(gl_FragCoord.y, 2), 0.8) * 0.5 + step(mod(gl_FragCoord.y + gl_FragCoord.x, 2), 0.8) * 0.25;
@@ -559,7 +578,7 @@ void main(void)
 		}
 		ray_intensity *= pow(max(-dot(v_LightDirection, viewVec), 0.), 4.);
 
-		col.rgb += dayLight * ray_intensity * vec3(1., 0.7, 0.4) * f_adj_shadow_strength;
+		col.rgb += tinted_dayLight * ray_intensity * vec3(1., 0.7, 0.4) * f_adj_shadow_strength;
 #else
 		float ray_intensity = 0.;
 		float ray_length = length(eyeVec);
@@ -572,7 +591,7 @@ void main(void)
 		}
 		ray_intensity *= pow(max(-dot(v_LightDirection, viewVec), 0.), 4.);
 
-		col.rgb += dayLight * ray_intensity * vec3(1., 0.7, 0.4) * f_adj_shadow_strength;
+		col.rgb += tinted_dayLight * ray_intensity * vec3(1., 0.7, 0.4) * f_adj_shadow_strength;
 #endif
 #endif
 	}
