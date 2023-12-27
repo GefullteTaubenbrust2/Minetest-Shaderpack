@@ -1,3 +1,4 @@
+#define EXPERIMENTAL_BUMPMAP
 #define ENABLE_GOD_RAYS
 #define ENABLE_FRAGMENT_WAVES
 
@@ -464,6 +465,21 @@ void main(void)
 	color = base.rgb;
 	vec4 col = vec4(color.rgb * varColor.rgb, 1.0);
 
+vec3 cNormal = vNormal;
+
+#if (defined(EXPERIMENTAL_BUMPMAP) && MATERIAL_TYPE != TILE_MATERIAL_WAVING_LIQUID_TRANSPARENT)
+	float dx = 0.02;
+	float fx0y0 = fnoise(vec3(uv * 40., 0.)) + texture2D(baseTexture, uv).r * 0.5;
+	float fx1y0 = fnoise(vec3(uv * 40. + vec2(dx, 0.), 0.)) + texture2D(baseTexture, uv + vec2(dx, 0.)).r * 0.5;
+	float fx0y1 = fnoise(vec3(uv * 40. + vec2(0., dx), 0.)) + texture2D(baseTexture, uv + vec2(0., dx)).r * 0.5;
+	vec3 orth1 = normalize(cross(vNormal, mix(vec3(0., -1., 0.), vec3(0., 0., -1.), step(0.9, abs(vNormal.y)))));
+	vec3 orth2 = normalize(cross(vNormal, orth1));
+	cNormal = normalize(vNormal + (orth1 * (fx1y0 - fx0y0) / dx + orth2 * (fx0y1 - fx0y0) / dx) * 0.25);
+	float adj_cosLight = max(1e-5, dot(cNormal, -v_LightDirection));
+#else 
+	float adj_cosLight = cosLight;
+#endif
+
 #ifdef ENABLE_DYNAMIC_SHADOWS
 	if (f_shadow_strength > 0.0) {
 		float shadow_int = 0.0;
@@ -479,14 +495,14 @@ void main(void)
 
 #ifdef COLORED_SHADOWS
 			vec4 visibility;
-			if (cosLight > 0.0 || f_normal_length < 1e-3 || leaves > 0.1)
+			if (adj_cosLight > 0.0 || f_normal_length < 1e-3 || leaves > 0.1)
 				visibility = getShadowColor(ShadowMapSampler, posLightSpace.xy, posLightSpace.z);
 			else
 				visibility = vec4(1.0, 0.0, 0.0, 0.0);
 			shadow_int = visibility.r;
 			shadow_color = visibility.gba;
 #else
-			if (cosLight > 0.0 || f_normal_length < 1e-3 || leaves > 0.1)
+			if (adj_cosLight > 0.0 || f_normal_length < 1e-3 || leaves > 0.1)
 				shadow_int = getShadow(ShadowMapSampler, posLightSpace.xy, posLightSpace.z);
 			else
 				shadow_int = 1.0;
@@ -506,22 +522,20 @@ void main(void)
 		vec3 smooth_normal = normalize(vNormal + leafPos - vNormal * dot(leafPos, vNormal));
 		float light_factor = max(dot(smooth_normal, v_LightDirection) * 0.8 + 0.2, 0.);
 
-		//col.rgb = vec3(light_factor);
-
 		// Apply self-shadowing when light falls at a narrow angle to the surface
 		// Cosine of the cut-off angle.
 		const float self_shadow_cutoff_cosine = 0.035;
 		if (f_normal_length != 0 && cosLight < self_shadow_cutoff_cosine) {
-			shadow_int = max(shadow_int, 1 - clamp(cosLight, 0.0, self_shadow_cutoff_cosine)/self_shadow_cutoff_cosine) * light_factor + shadow_int * (1. - light_factor);
-			shadow_color = mix(vec3(0.0), shadow_color, min(cosLight, self_shadow_cutoff_cosine)/self_shadow_cutoff_cosine) * light_factor + shadow_color * (1. - light_factor);
+			shadow_int = max(shadow_int, 1 - clamp(adj_cosLight, 0.0, self_shadow_cutoff_cosine)/self_shadow_cutoff_cosine) * light_factor + shadow_int * (1. - light_factor);
+			shadow_color = mix(vec3(0.0), shadow_color, min(adj_cosLight, self_shadow_cutoff_cosine)/self_shadow_cutoff_cosine) * light_factor + shadow_color * (1. - light_factor);
 		}
 #else
 		// Apply self-shadowing when light falls at a narrow angle to the surface
 		// Cosine of the cut-off angle.
 		const float self_shadow_cutoff_cosine = 0.035;
-		if (f_normal_length != 0 && cosLight < self_shadow_cutoff_cosine) {
-			shadow_int = max(shadow_int, 1 - clamp(cosLight, 0.0, self_shadow_cutoff_cosine)/self_shadow_cutoff_cosine);
-			shadow_color = mix(vec3(0.0), shadow_color, min(cosLight, self_shadow_cutoff_cosine)/self_shadow_cutoff_cosine);
+		if (f_normal_length != 0 && adj_cosLight < self_shadow_cutoff_cosine) {
+			shadow_int = max(shadow_int, 1 - clamp(adj_cosLight, 0.0, self_shadow_cutoff_cosine)/self_shadow_cutoff_cosine);
+			shadow_color = mix(vec3(0.0), shadow_color, min(adj_cosLight, self_shadow_cutoff_cosine)/self_shadow_cutoff_cosine);
 		}
 #endif
 
@@ -560,16 +574,22 @@ void main(void)
 		col.rgb += reflection_color * pow((1. - adjusted_night_ratio) * dp, 2.) * 0.5;
 		vec3 reflect_ray = -normalize(v_LightDirection - fNormal * dot(v_LightDirection, fNormal) * 2.);
 		col.rgb += tinted_dayLight * 16. * dp * mtsmoothstep(0.85, 0.9, pow(clamp(dot(reflect_ray, viewVec), 0., 1.), 32.)) * max(1. - shadow_uncorrected, 0.) * f_adj_shadow_strength;
+#else
+		vec3 leaf_reflect_ray = -normalize(v_LightDirection - cNormal * dot(v_LightDirection, cNormal) * 2.);
+		col.rgb += 
+			tinted_dayLight * f_adj_shadow_strength * 
+			pow(max(dot(leaf_reflect_ray, viewVec), 0.), 4.) * pow(1. - abs(dot(viewVec, vNormal)), 8.) * 
+			(1. - shadow_uncorrected) * (1. - base.r) * 4. * (leaves * 0.5 + 0.5) * length(vNormal);
 #endif
 
 		col.rgb += base.rgb * normalize(base.rgb) * tinted_dayLight * f_adj_shadow_strength * 8. * step(0.5, leaves) * pow(max(-dot(v_LightDirection, viewVec), 0.), 16.) * max(1. - shadow_uncorrected, 0.);
-
+		
 #ifdef ENABLE_GOD_RAYS
 		float bias = step(mod(gl_FragCoord.y * 0.5, 2), 0.8) * 0.125 + step(mod((gl_FragCoord.y + gl_FragCoord.x) * 0.5, 2), 0.8) * 0.0625 + step(mod(gl_FragCoord.y, 2), 0.8) * 0.5 + step(mod(gl_FragCoord.y + gl_FragCoord.x, 2), 0.8) * 0.25;
 #ifdef COLORED_SHADOWS
 		vec3 ray_intensity = vec3(0.);
-		float ray_length = length(eyeVec);
-		vec3 ray_origin = eyePosition - (vec4(cameraOffset, 1.) * mWorld).xyz;
+		float ray_length = max(length(eyeVec) - 10., 0.);
+		vec3 ray_origin = eyePosition - (vec4(cameraOffset, 1.) * mWorld).xyz + viewVec * 10.;
 		for (int i = 0; i < 20; i++) {
 			float f = (float(i) + bias) / 20.;
 			float dist = ray_length * f * f;
@@ -581,8 +601,8 @@ void main(void)
 		col.rgb += tinted_dayLight * ray_intensity * vec3(1., 0.7, 0.4) * f_adj_shadow_strength;
 #else
 		float ray_intensity = 0.;
-		float ray_length = length(eyeVec);
-		vec3 ray_origin = eyePosition - (vec4(cameraOffset, 1.) * mWorld).xyz;
+		float ray_length = max(length(eyeVec) - 10., 0.);
+		vec3 ray_origin = eyePosition - (vec4(cameraOffset, 1.) * mWorld).xyz + viewVec * 10.;
 		for (int i = 0; i < 20; i++) {
 			float f = (float(i) + bias) / 20.;
 			float dist = ray_length * f * f;
