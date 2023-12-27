@@ -1,4 +1,4 @@
-![screenshot_20231227_191838](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/9d81cc24-465a-4de0-9bc8-53a7e52001d1)# GefTau Shaderpack for Minetest
+# GefTau Shaderpack for Minetest
 This pack is intended to improve Minetest's visuals by modifying its shader code. Of course, the code is based off of minetest's original shader code. The pack adds the following effects:
 - Better Shadow/artificial Light Colors
 - Vignette
