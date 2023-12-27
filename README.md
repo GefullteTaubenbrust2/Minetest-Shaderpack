@@ -31,4 +31,5 @@ Of course there is at least some performance impact that comes with these effect
 ![screenshot_20231227_192010](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/aa787c81-93f8-4a9c-be55-eb581e8fc010)
 ![screenshot_20231227_192054](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/fe7b9fd8-7425-4129-b40c-2b90796931f2)
 ![screenshot_20231227_193108](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/711e84ed-e1d6-4183-8333-ecb4fbd360f4)
+![screenshot_20231227_194858](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/b62aaee3-a66d-41ad-b70c-cf6a63aee579)
 
