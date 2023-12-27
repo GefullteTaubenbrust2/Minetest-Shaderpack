@@ -1,4 +1,4 @@
-# GefTau Shaderpack for Minetest
+![screenshot_20231227_191838](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/9d81cc24-465a-4de0-9bc8-53a7e52001d1)# GefTau Shaderpack for Minetest
 This pack is intended to improve Minetest's visuals by modifying its shader code. Of course, the code is based off of minetest's original shader code. The pack adds the following effects:
 - Better Shadow/artificial Light Colors
 - Vignette
@@ -26,9 +26,9 @@ Of course there is at least some performance impact that comes with these effect
 4. Save changes
 
 # Gallery
-![screenshot_20231030_175105](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/9b42db6d-398e-44fb-8b2e-a698f6147ba2)
-![screenshot_20231031_104621](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/455152bb-9ac3-42e4-9088-78e01264d59d)
-![screenshot_20231126_141917](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/4ba24b62-ebdf-47c3-b864-70c350ac18eb)
-![screenshot_20231127_183152](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/c5ebfc0b-d9c0-41c8-993b-d87b2e744951)
-![screenshot_20231030_130006](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/b8c8663c-5d76-4287-bce2-83e89e94567e)
-![screenshot_20231127_181538](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/5fb2b398-a755-499e-bb10-339221dee82e)
+![screenshot_20231227_191838](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/0949e6f2-8237-468d-a9d1-197836369409)
+![screenshot_20231227_191940](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/bd033452-f440-4a06-b6da-3856a6bc30a1)
+![screenshot_20231227_192010](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/aa787c81-93f8-4a9c-be55-eb581e8fc010)
+![screenshot_20231227_192054](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/fe7b9fd8-7425-4129-b40c-2b90796931f2)
+![screenshot_20231227_193108](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/711e84ed-e1d6-4183-8333-ecb4fbd360f4)
+
