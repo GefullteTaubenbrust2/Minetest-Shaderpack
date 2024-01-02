@@ -588,8 +588,8 @@ vec3 cNormal = vNormal;
 		float bias = step(mod(gl_FragCoord.y * 0.5, 2), 0.8) * 0.125 + step(mod((gl_FragCoord.y + gl_FragCoord.x) * 0.5, 2), 0.8) * 0.0625 + step(mod(gl_FragCoord.y, 2), 0.8) * 0.5 + step(mod(gl_FragCoord.y + gl_FragCoord.x, 2), 0.8) * 0.25;
 #ifdef COLORED_SHADOWS
 		vec3 ray_intensity = vec3(0.);
-		float ray_length = max(length(eyeVec) - 10., 0.);
-		vec3 ray_origin = eyePosition - (vec4(cameraOffset, 1.) * mWorld).xyz + viewVec * 10.;
+		float ray_length = max(length(eyeVec) - 5., 0.);
+		vec3 ray_origin = eyePosition - (vec4(cameraOffset, 1.) * mWorld).xyz + viewVec * 5.;
 		for (int i = 0; i < 20; i++) {
 			float f = (float(i) + bias) / 20.;
 			float dist = ray_length * f * f;
@@ -601,8 +601,8 @@ vec3 cNormal = vNormal;
 		col.rgb += tinted_dayLight * ray_intensity * vec3(1., 0.7, 0.4) * f_adj_shadow_strength;
 #else
 		float ray_intensity = 0.;
-		float ray_length = max(length(eyeVec) - 10., 0.);
-		vec3 ray_origin = eyePosition - (vec4(cameraOffset, 1.) * mWorld).xyz + viewVec * 10.;
+		float ray_length = max(length(eyeVec) - 5., 0.);
+		vec3 ray_origin = eyePosition - (vec4(cameraOffset, 1.) * mWorld).xyz + viewVec * 5.;
 		for (int i = 0; i < 20; i++) {
 			float f = (float(i) + bias) / 20.;
 			float dist = ray_length * f * f;
