@@ -25,7 +25,7 @@ Of course there is at least some performance impact that comes with these effect
 3. Comment out one or more of the options `#define ENABLE_GOD_RAYS`, `#define EXPERIMENTAL_BUMPMAP` and `#define ENABLE_FRAGMENT_WAVES` by writing `//` before them.
 4. Save changes
 
-There is also an additional option for if you turn off clouds in the graphics settings. Simply repeat the above steps, but remove `//` before the option `CLOUDS_DISABLED`.
+There is also an additional option for if you turn off clouds in the graphics settings. Simply repeat the above steps, but remove `//` before the option `#define CLOUDS_DISABLED`.
 
 # Gallery
 ![screenshot_20231227_191838](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/0949e6f2-8237-468d-a9d1-197836369409)
