@@ -1,6 +1,7 @@
 #define EXPERIMENTAL_BUMPMAP
 #define ENABLE_GOD_RAYS
 #define ENABLE_FRAGMENT_WAVES
+//#define CLOUDS_DISABLED
 
 uniform sampler2D baseTexture;
 
@@ -489,7 +490,12 @@ vec3 cNormal = vNormal;
 		float distance_rate = (1.0 - pow(clamp(2.0 * length(posLightSpace.xy - 0.5),0.0,1.0), 10.0));
 		if (max(abs(posLightSpace.x - 0.5), abs(posLightSpace.y - 0.5)) > 0.5)
 			distance_rate = 0.0;
+
+#ifdef CLOUDS_DISABLED
+		float f_adj_shadow_strength = 0.6 * (mtsmoothstep(0.24, 0.3, dayLight.r) + mtsmoothstep(0.155, 0.105, dayLight.r));
+#else
 		float f_adj_shadow_strength = max(adj_shadow_strength - mtsmoothstep(0.9, 1.1, posLightSpace.z),0.0);
+#endif
 
 		if (distance_rate > 1e-7) {
 
@@ -582,7 +588,7 @@ vec3 cNormal = vNormal;
 			(1. - shadow_uncorrected) * (1. - base.r) * 4. * (leaves * 0.5 + 0.5) * length(vNormal);
 #endif
 
-		col.rgb += base.rgb * normalize(base.rgb) * tinted_dayLight * f_adj_shadow_strength * 8. * step(0.5, leaves) * pow(max(-dot(v_LightDirection, viewVec), 0.), 16.) * max(1. - shadow_uncorrected, 0.);
+		col.rgb += base.rgb * normalize(base.rgb) * tinted_dayLight * f_adj_shadow_strength * 5. * step(0.5, leaves) * pow(max(-dot(v_LightDirection, viewVec), 0.), 16.) * max(1. - shadow_uncorrected, 0.);
 		
 #ifdef ENABLE_GOD_RAYS
 		float bias = step(mod(gl_FragCoord.y * 0.5, 2), 0.8) * 0.125 + step(mod((gl_FragCoord.y + gl_FragCoord.x) * 0.5, 2), 0.8) * 0.0625 + step(mod(gl_FragCoord.y, 2), 0.8) * 0.5 + step(mod(gl_FragCoord.y + gl_FragCoord.x, 2), 0.8) * 0.25;
@@ -598,7 +604,7 @@ vec3 cNormal = vNormal;
 		}
 		ray_intensity *= pow(max(-dot(v_LightDirection, viewVec), 0.), 4.);
 
-		col.rgb += tinted_dayLight * ray_intensity * vec3(1., 0.7, 0.4) * f_adj_shadow_strength;
+		col.rgb += tinted_dayLight * ray_intensity * vec3(1., 0.7, 0.4) * f_adj_shadow_strength * adjusted_night_ratio;
 #else
 		float ray_intensity = 0.;
 		float ray_length = max(length(eyeVec) - 5., 0.);

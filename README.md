@@ -18,12 +18,14 @@ The nice thing about Minetest shaders is that you can modify them easily without
 
 If you want to uninstall, either download the default shaders from [the Minetest repository](https://github.com/minetest/minetest) or create a backup of your current shaders and copy whichever you chose into the `client/shaders` folder.
 
-# Performance
+# Options and Performance
 Of course there is at least some performance impact that comes with these effects. The god rays in particular are quite heavy on the graphics card. The same is somewhat true for the wavy water. If you should run into lag issues, both can be disabled. The bumpmap effect too can be toggled off, if you don't like it:
 1. Go to your `client/shaders` folder after installing or the master folder before installing
 2. Open `nodes_shader/opengl_fragment.glsl` with a text editor of your choosing
-3. Comment out one or more of the options `#define ENABLE_GOD_RAYS`, `#define EXPERIMENTAL_BUMPMAP` and `#define ENABLE_FRAGMENT_WAVES` by writing `//` before them
+3. Comment out one or more of the options `#define ENABLE_GOD_RAYS`, `#define EXPERIMENTAL_BUMPMAP` and `#define ENABLE_FRAGMENT_WAVES` by writing `//` before them.
 4. Save changes
+
+There is also an additional option for if you turn off clouds in the graphics settings. Simply repeat the above steps, but remove `//` before the option `CLOUDS_DISABLED`.
 
 # Gallery
 ![screenshot_20231227_191838](https://github.com/GefullteTaubenbrust2/Minetest-Shaderpack/assets/72752000/0949e6f2-8237-468d-a9d1-197836369409)
