@@ -125,7 +125,7 @@ void main(void)
 
 	color.rgb *= pow(1. - length(uv - vec2(0.5)) * 1.4, 0.9) + 0.2;
 
-	color.rgb = pow(color.rgb, vec3(1.15, 1., 0.85)) * vec3(1.15, 1., 0.85);
+	color.rgb = pow(color.rgb, vec3(1.25, 1., 0.8)) * vec3(1.25, 1., 0.8);
 
 	// return to sRGB colorspace (approximate)
 	color.rgb = pow(color.rgb, vec3(1.0 / 2.2));

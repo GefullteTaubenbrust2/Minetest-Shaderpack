@@ -52,7 +52,7 @@ varying float area_enable_parallax;
 varying vec3 eyeVec;
 varying float nightRatio;
 // Color of the light emitted by the light sources.
-const vec3 artificialLight = vec3(1.2, 0.95, 0.8);
+const vec3 artificialLight = vec3(1.2, 0.92, 0.75);
 const float e = 2.718281828459;
 const float BS = 10.0;
 uniform float xyPerspectiveBias0;
@@ -160,7 +160,7 @@ void main(void)
 	float disp_z;
 // OpenGL < 4.3 does not support continued preprocessor lines
 
-leaves = 0.01;
+leaves = 0.;
 #if (MATERIAL_TYPE == TILE_MATERIAL_WAVING_LEAVES && ENABLE_WAVING_LEAVES) || (MATERIAL_TYPE == TILE_MATERIAL_WAVING_PLANTS && ENABLE_WAVING_PLANTS)
 	leaves = 1.;
 	vec4 pos2 = mWorld * inVertexPosition;

@@ -97,6 +97,10 @@ float fnoise(vec3 p) {
 	return snoise(p) * 0.5 + snoise(p * 2.) * 0.25;
 }
 
+float wnoise(vec3 p, float off) {
+	return snoise(p + vec3(off, off, 0.)) * 0.4 + snoise(2. * p + vec3(0., off, off)) * 0.2 + snoise(3. * p + vec3(0., off, off)) * 0.15 + snoise(4. *p + vec3(-off, off, 0.)) * 0.1;
+}
+
 vec4 getRelativePosition(in vec4 position)
 {
 	vec2 l = position.xy - CameraPos.xy;
@@ -563,12 +567,12 @@ vec3 cNormal = vNormal;
 #if (MATERIAL_TYPE == TILE_MATERIAL_WAVING_LIQUID_TRANSPARENT)
 #ifdef ENABLE_FRAGMENT_WAVES
 		vec3 wavePos = worldPosition * vec3(2., 0., 2.);
+		float off = animationTimer * WATER_WAVE_SPEED * 10.0;
 		wavePos.x /= WATER_WAVE_LENGTH * 3.0;
 		wavePos.z /= WATER_WAVE_LENGTH * 4.0;
-		wavePos.z += animationTimer * WATER_WAVE_SPEED * 10.0;
-		float fxy = fnoise(wavePos);
-		float dydx = (fnoise(wavePos + vec3(0.1, 0., 0.)) - fxy) / 0.1;
-		float dydz = (fnoise(wavePos + vec3(0., 0., 0.1)) - fxy) / 0.1;
+		float fxy = wnoise(wavePos, off);
+		float dydx = (wnoise(wavePos + vec3(0.1, 0., 0.), off) - fxy) / 0.1;
+		float dydz = (wnoise(wavePos + vec3(0., 0., 0.1), off) - fxy) / 0.1;
 		vec3 fNormal = normalize(normalize(dNormal) + vec3(-dydx, 0., -dydz) * WATER_WAVE_HEIGHT * 0.25 * abs(dNormal.y));
 #else
 		vec3 fNormal = normalize(dNormal);
@@ -588,8 +592,10 @@ vec3 cNormal = vNormal;
 			(1. - shadow_uncorrected) * (1. - base.r) * 4. * (leaves * 0.5 + 0.5) * length(vNormal);
 #endif
 
-		col.rgb += base.rgb * normalize(base.rgb) * tinted_dayLight * f_adj_shadow_strength * 5. * step(0.5, leaves) * pow(max(-dot(v_LightDirection, viewVec), 0.), 16.) * max(1. - shadow_uncorrected, 0.);
+		col.rgb += base.rgb * normalize(base.rgb) * tinted_dayLight * f_adj_shadow_strength * 5. * leaves * pow(max(-dot(v_LightDirection, viewVec), 0.), 16.) * max(1. - shadow_uncorrected, 0.);
 		
+		float sun_scatter = pow(max(-dot(v_LightDirection, viewVec), 0.), 4.);
+
 #ifdef ENABLE_GOD_RAYS
 		float bias = step(mod(gl_FragCoord.y * 0.5, 2), 0.8) * 0.125 + step(mod((gl_FragCoord.y + gl_FragCoord.x) * 0.5, 2), 0.8) * 0.0625 + step(mod(gl_FragCoord.y, 2), 0.8) * 0.5 + step(mod(gl_FragCoord.y + gl_FragCoord.x, 2), 0.8) * 0.25;
 #ifdef COLORED_SHADOWS
@@ -602,7 +608,7 @@ vec3 cNormal = vNormal;
 			vec3 ray_position = ray_origin + viewVec * dist;
 			ray_intensity += getGodRay(ray_position) * 0.0002 * float(2 * i + 1) * exp(-dist * 0.1) * ray_length;
 		}
-		ray_intensity *= pow(max(-dot(v_LightDirection, viewVec), 0.), 4.);
+		ray_intensity *= sun_scatter;
 
 		col.rgb += tinted_dayLight * ray_intensity * vec3(1., 0.7, 0.4) * f_adj_shadow_strength * adjusted_night_ratio;
 #else
@@ -615,13 +621,15 @@ vec3 cNormal = vNormal;
 			vec3 ray_position = ray_origin + viewVec * dist;
 			ray_intensity += getGodRay(ray_position) * 0.0002 * float(2 * i + 1) * exp(-dist * 0.1) * ray_length;
 		}
-		ray_intensity *= pow(max(-dot(v_LightDirection, viewVec), 0.), 4.);
+		ray_intensity *= sun_scatter;
 
 		col.rgb += tinted_dayLight * ray_intensity * vec3(1., 0.7, 0.4) * f_adj_shadow_strength;
 #endif
 #endif
+		//col.rgb += max(mix(vec3(skyBgColor.b), skyBgColor.rgb, 2.), vec3(0.)) * (1. - sun_scatter) * (1. - exp(-length(eyeVec) * 0.375 / fogDistance));
 	}
 #endif
+
 	// Due to a bug in some (older ?) graphics stacks (possibly in the glsl compiler ?),
 	// the fog will only be rendered correctly if the last operation before the
 	// clamp() is an addition. Else, the clamp() seems to be ignored.
@@ -633,7 +641,9 @@ vec3 cNormal = vNormal;
 	// Note: clarity = (1 - fogginess)
 	float clarity = clamp(fogShadingParameter
 		- fogShadingParameter * length(eyeVec) / fogDistance, 0.0, 1.0);
-	col = mix(skyBgColor, col, clarity);
+	float skyBgMax = max(max(skyBgColor.r, skyBgColor.g), skyBgColor.b);
+	if (skyBgMax < 0.0000001) skyBgMax = 1.;
+	col = mix(skyBgColor * pow(skyBgColor / skyBgMax, vec4(2. * clarity)), col, clarity);
 	col = vec4(col.rgb, base.a);
 
 	gl_FragData[0] = col;
