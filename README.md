@@ -36,7 +36,7 @@ A little note, if there is some problem with the code itself, Minetest will show
 
 # Options and Performance
 Of course there is at least some performance impact that comes with these effects. The god rays in particular are quite heavy on the graphics card. The same is somewhat true for the wavy water. If you should run into lag issues, both can be disabled. The bumpmap effect too can be toggled off, if you don't like it:
-1. Go to your shaderpack folder folder or the ˋclient/shadersˋ folder, depending on how you installed
+1. Go to your shaderpack folder folder or the `client/shaders` folder, depending on how you installed
 2. Open `nodes_shader/opengl_fragment.glsl` with a text editor of your choosing
 3. Comment out one or more of the options `#define ENABLE_GOD_RAYS`, `#define EXPERIMENTAL_BUMPMAP` and `#define ENABLE_FRAGMENT_WAVES` by writing `//` before them.
 4. Save changes
